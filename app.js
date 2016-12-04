@@ -23,4 +23,12 @@ io.sockets.on('connection', function(socket) {
     var personalMessage = "あなたは" + name + "さんとして入室しました。";
     io.to(id).emit('server_to_client', {value: personalMessage });
   });
+
+  socket.on('disconnect', function() {
+    if (name == 'undefined') {
+      console.log("未入室のまま、どこかへ去っていきました。");
+    }
+      var endMessage = name + "さんが退出しました。";
+      io.sockets.emit('server_to_client', {value : endMessage});
+  });
 });
