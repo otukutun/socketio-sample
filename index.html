@@ -23,17 +23,25 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         </div>
           <button type="submit" class="btn btn-primary" id="sendButton">入室</button>
       </form>
-      <div id="chatLogs"></div>
+      <div id="chatLogs"><p>= ==チャットログ= ==</p></div>
+      <br >
+      <div id="fortune"><p>= =今日の運勢= =</p></div>
   </div>
   <script type="text/javascript">
-    var socket = io.connect();
+    var chat = io('http://localhost:3000/chat');
+    var fortune = io('http://localhost:3000/fortune');
     var isEnter = false;
     var name = '';
 
-    socket.on("server_to_client", function(data) { appendMsg(data.value) });
+    chat.on("server_to_client", function(data) { appendMsg(data.value) });
+    fortune.on("server_to_client", function(data) {appendFortune(data.value)});
 
     function appendMsg(text) {
       $("#chatLogs").append("<div>" + text + "</div>");
+    }
+
+    function appendFortune(text) {
+      $("#fortune").append("<div>" + text + "</div>");
     }
 
     $("form").submit(function(e) {
@@ -43,15 +51,15 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
       if (isEnter) {
         message = "[" + name + "]: " + message;
         // C03. client_to_serverイベント・データを送信する
-        socket.emit("client_to_server", { value : message });
+        chat.emit("client_to_server", { value : message });
       } else {
         name = message;
         var entryMessage = name + "さんが入室しました。";
-        socket.emit("client_to_server_join", {value : selectRoom});
+        chat.emit("client_to_server_join", {value : selectRoom});
         // C05. client_to_server_broadcastイベント・データを送信する
-        socket.emit("client_to_server_broadcast", {value : entryMessage});
+        chat.emit("client_to_server_broadcast", {value : entryMessage});
 
-        socket.emit("client_to_server_personal", {value : name});
+        chat.emit("client_to_server_personal", {value : name});
         changeLabel();
       }
       e.preventDefault();
