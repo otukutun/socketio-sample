@@ -13,15 +13,17 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <h1>WebSocket-Chat</h1>
       <form class="form-inline">
         <div class="form-group">
-          <label for="msgForm">メッセージ：</label>
+          <label for="msgForm">名前：</label>
           <input type="text" class="form-control" id="msgForm">
         </div>
-          <button type="submit" class="btn btn-primary">送信</button>
+          <button type="submit" class="btn btn-primary" id="sendButton">入室</button>
       </form>
       <div id="chatLogs"></div>
   </div>
   <script type="text/javascript">
     var socket = io.connect();
+    var isEnter = false;
+    var name = '';
 
     socket.on("server_to_client", function(data) { appendMsg(data.value) });
 
@@ -32,9 +34,26 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     $("form").submit(function(e) {
       var message = $("#msgForm").val();
       $("#msgForm").val('');
-      socket.emit("client_to_server", { value : message });
+      if (isEnter) {
+        message = "[" + name + "]: " + message;
+        // C03. client_to_serverイベント・データを送信する
+        socket.emit("client_to_server", { value : message });
+      } else {
+        name = message;
+        var entryMessage = name + "さんが入室しました。";
+        // C05. client_to_server_broadcastイベント・データを送信する
+        socket.emit("client_to_server_broadcast", {value : entryMessage});
+
+        socket.emit("client_to_server_personal", {value : name});
+        changeLabel();
+      }
       e.preventDefault();
     });
+    function changeLabel() {
+      $("label").text("メッセージ：");
+      $("button").text("送信");
+      isEnter = true;
+    }
   </script>
 </body>
 </html>
