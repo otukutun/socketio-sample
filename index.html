@@ -13,6 +13,11 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <h1>WebSocket-Chat</h1>
       <form class="form-inline">
         <div class="form-group">
+          <label class="roomLabel" for="rooms">部屋：</label>
+          <select class="form-control" id="rooms">
+            <option value="room01">部屋01</option>
+            <option value="room02">部屋02</option>
+          </select>
           <label for="msgForm">名前：</label>
           <input type="text" class="form-control" id="msgForm">
         </div>
@@ -33,6 +38,7 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
     $("form").submit(function(e) {
       var message = $("#msgForm").val();
+      var selectRoom = $("#rooms").val();
       $("#msgForm").val('');
       if (isEnter) {
         message = "[" + name + "]: " + message;
@@ -41,6 +47,7 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
       } else {
         name = message;
         var entryMessage = name + "さんが入室しました。";
+        socket.emit("client_to_server_join", {value : selectRoom});
         // C05. client_to_server_broadcastイベント・データを送信する
         socket.emit("client_to_server_broadcast", {value : entryMessage});
 
@@ -51,6 +58,7 @@ href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     });
     function changeLabel() {
       $("label").text("メッセージ：");
+      $("#rooms").prop("disabled", true);
       $("button").text("送信");
       isEnter = true;
     }
